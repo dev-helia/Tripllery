@@ -12,6 +12,7 @@ from agent.query_generator import generate_queries
 from maps.fetcher import search_google_maps
 from agent.fusion import fuse_cards_async
 from crawler.xiaohongshu import fetch_reviews_for_poi
+from services.score_cards import score_cards
 
 recommend_bp = Blueprint("recommend", __name__)
 
@@ -64,10 +65,13 @@ async def recommend_cards():
 
         # 5️⃣ Fuse into card pool (async highlight + review fusion)
         card_pool = await fuse_cards_async(all_pois, review_lookup)
-
+        
+        # 6 RANK BY SCORE
+        card_pool = score_cards(card_pool)
+        
         # TODO 返回固定数量卡片（每次只返回前 5 个）
         return jsonify(card_pool[:5])
-
+    
     except Exception as e:
         # TODO Error
         print("💥 ERROR:", e)
