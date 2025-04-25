@@ -1,26 +1,25 @@
 """
-/recommend API · Tripllery Full Agent Flow
+/recommend API · Tripllery Full Agent Flow (Async Version)
 
 Receives form input → Parses user intent → Generates queries
 → Fetches POIs from Google Maps → Crawls review content
-→ Generates LLM highlights → Returns Tinder-style card pool
+→ Generates LLM highlights (async) → Returns Tinder-style card pool
 """
 
-from flask import Blueprint, request, jsonify
+from quart import Blueprint, request, jsonify
 from agent.llm_intent import parse_form_input
 from agent.query_generator import generate_queries
 from maps.fetcher import search_google_maps
-from agent.fusion import fuse_cards
+from agent.fusion import fuse_cards_async
 from crawler.xiaohongshu import fetch_reviews_for_poi
-from agent.highlight_llm import extract_highlights
 
 recommend_bp = Blueprint("recommend", __name__)
 
 @recommend_bp.route("/recommend", methods=["POST"])
-def recommend_cards():
+async def recommend_cards():
     try:
         # 1️⃣ Parse user form input
-        form_data = request.get_json()
+        form_data = await request.get_json()
         # TODO DEBUG
         print("🧾 Step 1: Got form_data ✅", form_data)
 
@@ -46,7 +45,7 @@ def recommend_cards():
         # TODO DEBUG
         print("🗺️ Step 4: Total POIs fetched ✅", len(all_pois))
 
-        # 4️⃣ Auto generate review lookup using Xiaohongshu + GPT
+        # 4️⃣ Auto generate review lookup using Xiaohongshu
         review_lookup = {}
 
         for poi in all_pois:
@@ -54,25 +53,19 @@ def recommend_cards():
             city = poi.get("city", "")
 
             scraped = fetch_reviews_for_poi(name, city)
-
             if scraped["raw_texts"]:
-                # TODO DEBUG
-                print(f"🧠 Calling highlight LLM for: {name}")
-                highlight = extract_highlights(scraped["raw_texts"][0])
                 review_lookup[name] = {
-                    "description": highlight["description"],
-                    "tags": highlight["tags"],
+                    "raw_text": scraped["raw_texts"][0],
                     "links": scraped.get("links", [])
                 }
-                # TODO DEBUG
-                print(f"✅ Highlight ready for: {name}")
+
         # TODO DEBUG
         print("🧠 Step 5: Fusing with reviews ✅")
 
-        # 5️⃣ Fuse into card pool 
-        card_pool = fuse_cards(all_pois, review_lookup)
+        # 5️⃣ Fuse into card pool (async highlight + review fusion)
+        card_pool = await fuse_cards_async(all_pois, review_lookup)
 
-        # ✅ 返回固定数量卡片（每次只返回前 5 个）
+        # TODO 返回固定数量卡片（每次只返回前 5 个）
         return jsonify(card_pool[:5])
 
     except Exception as e:
