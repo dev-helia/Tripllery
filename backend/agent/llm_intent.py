@@ -1,17 +1,8 @@
-"""
-LLM Intent Parser (OpenAI Version, SDK 1.x)
-
-Parses structured form input, and uses OpenAI to extract keyword tags from natural-language note.
-
-- Input: Full form from user (with .get for each field)
-- Output: Standard intent dict + LLM extracted interest keywords (EN)
-"""
-
-import os
-import json
 from typing import Dict, List
-from dotenv import load_dotenv
+import json
 from openai import OpenAI
+import os
+from dotenv import load_dotenv
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -19,13 +10,7 @@ client = OpenAI(api_key=api_key)
 
 def extract_keywords(note: str) -> List[str]:
     """
-    Use OpenAI GPT to extract 3-5 concise English keywords from user notes.
-
-    Args:
-        note (str): Raw user description, e.g. "We want something chill and romantic."
-
-    Returns:
-        List[str]: Extracted keyword tags, e.g. ["relaxing", "romantic"]
+    Use OpenAI to extract interest keywords from user notes.
     """
     if not note.strip():
         return []
@@ -33,16 +18,15 @@ def extract_keywords(note: str) -> List[str]:
     prompt = f"""
 You are a travel assistant.
 
-Given the following user travel description, extract 3 to 5 concise English keywords 
-that describe their interests and travel style. Do not translate, and do not explain.
+Given the following user description, extract 3-5 concise English keywords that represent interests or trip style.
 
-Return the output in a JSON list format.
+Output in JSON array format.
 
 ---
-User Note: "{note}"
+"{note}"
 ---
-Output (JSON List):
-"""
+Output:
+    """
 
     try:
         response = client.chat.completions.create(
@@ -53,30 +37,34 @@ Output (JSON List):
         content = response.choices[0].message.content
         return json.loads(content)
     except Exception as e:
-        print("⚠️ LLM extraction failed:", e)
+        print(f"Keyword extraction failed: {e}")
         return []
 
 def parse_form_input(form_data: Dict) -> Dict:
     """
-    Parse raw user form into structured intent.
-
-    Args:
-        form_data (Dict): Raw input from frontend form.
-
-    Returns:
-        Dict: Parsed intent structure for recommendation pipeline.
+    Parse user form data into structured intent.
     """
-    note = form_data.get("trip_preferences", "")
-    return {
+    note = form_data.get("trip_preferences", "").strip()
+    keywords = extract_keywords(note)
+
+    if not keywords:
+        keywords = ["sightseeing", "food", "landmarks", "nature", "cafes"]
+
+    intent = {
         "departure_city": form_data.get("departure_city"),
         "destination": form_data.get("destination"),
-        "days": form_data.get("days"),
+        "start_datetime": form_data.get("start_datetime"),  # 🆕 新增
+        "end_datetime": form_data.get("end_datetime"),      # 🆕 新增
         "travelers": form_data.get("travelers"),
         "budget": form_data.get("budget"),
         "transportation": form_data.get("transportation"),
         "stopovers": form_data.get("stopovers", []),
         "trip_preferences": note,
-        "interest_keywords": extract_keywords(note),
+        "interest_keywords": keywords,
         "round_trip": form_data.get("round_trip", False),
         "include_hotels": form_data.get("include_hotels", False)
     }
+
+    print("✅ Parsed user intent:", intent)
+
+    return intent

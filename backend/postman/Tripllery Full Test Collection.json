@@ -1,0 +1,116 @@
+{
+  "info": {
+    "_postman_id": "tripllery-fulltest-final",
+    "name": "Tripllery Backend Full Test (Final)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1️⃣ POST /recommend",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.cards && Array.isArray(jsonData.cards)) {",
+              "  const poiIds = jsonData.cards.map(poi => poi.id);",
+              "  pm.environment.set('accepted_pois', JSON.stringify(poiIds));",
+              "  pm.environment.set('all_pois', JSON.stringify(jsonData.all_pois));",
+              "} else {",
+              "  console.error('Recommend API returned unexpected format');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"departure_city\": \"Boston\",\n  \"destination\": \"New York\",\n  \"start_datetime\": \"2025-07-01T14:00\",\n  \"end_datetime\": \"2025-07-06T18:00\",\n  \"travelers\": 2,\n  \"budget\": \"mid\",\n  \"transportation\": \"have_car\",\n  \"trip_preferences\": \"Art, cozy cafes, less crowded places\",\n  \"stopovers\": [\"New Haven\"],\n  \"round_trip\": true,\n  \"include_hotels\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/recommend",
+          "host": ["{{base_url}}"],
+          "path": ["recommend"]
+        }
+      }
+    },
+    {
+      "name": "2️⃣ POST /plan",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "let pois = pm.environment.get('accepted_pois') || '[]';",
+              "let allPois = pm.environment.get('all_pois') || '[]';",
+              "pm.variables.set('accepted_pois_dynamic', pois);",
+              "pm.variables.set('all_pois_dynamic', allPois);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "pm.environment.set('rough_plan', JSON.stringify(jsonData.plan || {}));",
+              "pm.environment.set('options', JSON.stringify(jsonData.options || {}));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accepted_pois\": {{accepted_pois_dynamic}},\n  \"all_pois\": {{all_pois_dynamic}},\n  \"transportation\": \"have_car\",\n  \"start_datetime\": \"2025-07-01T14:00\",\n  \"end_datetime\": \"2025-07-06T18:00\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/plan",
+          "host": ["{{base_url}}"],
+          "path": ["plan"]
+        }
+      }
+    },
+    {
+      "name": "3️⃣ POST /preview",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "let plan = pm.environment.get('rough_plan') || '{}';",
+              "let options = pm.environment.get('options') || '{}';",
+              "try { plan = JSON.parse(plan); } catch (e) { plan = {}; }",
+              "try { options = JSON.parse(options); } catch (e) { options = {}; }",
+              "pm.variables.set('rough_plan_dynamic', JSON.stringify(plan));",
+              "pm.variables.set('options_dynamic', JSON.stringify(options));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plan\": {{rough_plan_dynamic}},\n  \"options\": {{options_dynamic}}\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/preview",
+          "host": ["{{base_url}}"],
+          "path": ["preview"]
+        }
+      }
+    }
+  ]
+}

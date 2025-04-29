@@ -1,0 +1,34 @@
+{
+  "id": "tripllery-env-final",
+  "name": "Tripllery Local Environment (Final)",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5001",
+      "enabled": true
+    },
+    {
+      "key": "accepted_pois",
+      "value": "[]",
+      "enabled": true
+    },
+    {
+      "key": "all_pois",
+      "value": "[]",
+      "enabled": true
+    },
+    {
+      "key": "rough_plan",
+      "value": "{}",
+      "enabled": true
+    },
+    {
+      "key": "options",
+      "value": "{}",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2025-04-28T23:50:00",
+  "_postman_exported_using": "Postman/10.21.1"
+}

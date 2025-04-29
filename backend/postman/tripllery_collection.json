@@ -1,0 +1,72 @@
+{
+  "info": {
+    "_postman_id": "abcd-efgh-ijkl-mnop",
+    "name": "Tripllery Backend API Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST /recommend",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"departure_city\": \"Boston\",\n  \"destination\": \"New York\",\n  \"start_datetime\": \"2025-07-01T14:00\",\n  \"end_datetime\": \"2025-07-06T18:00\",\n  \"travelers\": 2,\n  \"budget\": \"mid\",\n  \"transportation\": \"have_car\",\n  \"trip_preferences\": \"Art, cozy cafes, less crowded places\",\n  \"stopovers\": [\"New Haven\"],\n  \"round_trip\": true,\n  \"include_hotels\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/recommend",
+          "host": ["{{base_url}}"],
+          "path": ["recommend"]
+        }
+      }
+    },
+    {
+      "name": "POST /plan",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accepted_pois\": [],\n  \"transportation\": \"have_car\",\n  \"start_datetime\": \"2025-07-01T14:00\",\n  \"end_datetime\": \"2025-07-06T18:00\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/plan",
+          "host": ["{{base_url}}"],
+          "path": ["plan"]
+        }
+      }
+    },
+    {
+      "name": "POST /preview",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plan\": {},\n  \"options\": {\n    \"start_time_of_day\": \"09:00\",\n    \"avg_poi_duration\": 90,\n    \"avg_transport_time\": 20,\n    \"lunch_time\": \"12:30\",\n    \"flexible_block\": 60,\n    \"transportation\": \"have_car\",\n    \"start_datetime\": \"2025-07-01T14:00\",\n    \"end_datetime\": \"2025-07-06T18:00\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/preview",
+          "host": ["{{base_url}}"],
+          "path": ["preview"]
+        }
+      }
+    }
+  ]
+}

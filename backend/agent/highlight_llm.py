@@ -1,12 +1,5 @@
-"""
-Highlight LLM Engine · Async Version (OpenAI API v1)
-
-Asynchronously calls OpenAI to extract highlight tags + description.
-"""
-
 import os
 import json
-import asyncio
 import httpx
 from typing import Dict
 
@@ -19,38 +12,21 @@ HEADERS = {
 }
 
 async def extract_highlights_async(raw_text: str) -> Dict:
-    """
-    Asynchronously extract highlight info from travel review text.
-
-    Args:
-        raw_text (str): Input content
-
-    Returns:
-        Dict: {
-            "description": "...",
-            "tags": ["..."]
-        }
-    """
     if not raw_text.strip():
         return {"description": "No summary available.", "tags": []}
 
     prompt = f"""
 You're a smart travel assistant.
 
-Given a user travel note or comment, please extract:
-1. A one-sentence summary of why the place is worth visiting.
-2. 3-5 highlight tags (English only) that capture the vibe or features.
+Extract:
+- One-sentence summary
+- 3-5 English tags
 
 Input:
----
 {raw_text}
----
 
-Output format (JSON only):
-{{
-  "description": "...",
-  "tags": ["...", "..."]
-}}
+Output JSON only:
+{{"description": "...", "tags": ["...", "..."]}}
 """
 
     payload = {
@@ -59,11 +35,16 @@ Output format (JSON only):
         "temperature": 0.7
     }
 
-    async with httpx.AsyncClient(timeout=20.0) as client:
-        try:
-            resp = await client.post(OPENAI_API_URL, headers=HEADERS, json=payload)
-            content = resp.json()["choices"][0]["message"]["content"]
-            return json.loads(content)
-        except Exception as e:
-            print("⚠️ Highlight async failed:", e)
-            return {"description": "Failed to extract highlights.", "tags": []}
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            response = await client.post(OPENAI_API_URL, headers=HEADERS, json=payload)
+            data = response.json()
+            if "choices" not in data:
+                raise ValueError("OpenAI missing choices")
+            content = data["choices"][0]["message"]["content"]
+            highlight_result = json.loads(content)
+            return highlight_result
+
+    except Exception as e:
+        print(f"⚠️ extract_highlights_async fallback because: {e}")
+        return {"description": "Failed to extract highlights.", "tags": []}
