@@ -1,10 +1,10 @@
-# Tripllery v3 — AI-Agent Travel Planner Hackathon Submission (English Version)
+# CardTrip — AI-Agent Travel Planner Hackathon Submission (English Version)
 
 ---
 
 ## Project Overview  
 
-Tripllery v3 is an **“AI Agent × full-stack”** travel-planning platform that delivers a complete trip schedule in three simple steps:
+CardTrip is an **“AI Agent × full-stack”** travel-planning platform that delivers a complete trip schedule in three simple steps:
 
 1. **Form → AI Agent → POI Recommendation → Scheduling → 4-Quadrant Preview**  
 2. A multi-tool *Travel Agent* (LLM + Google APIs + crawler) automatically performs:  
@@ -15,7 +15,7 @@ Tripllery v3 is an **“AI Agent × full-stack”** travel-planning platform tha
 
 ## AI Agent Goals & Hackathon Alignment  
 
-| Hackathon Criteria | Tripllery v3 Implementation |
+| Hackathon Criteria | CardTrip v3 Implementation |
 | :-- | :-- |
 | **Tool Usage** | Google Places & Directions APIs, XHS crawler, OpenAI Chat Completions |
 | **Autonomous Chain of Thought** | ① Keyword parse → ② multi-city queries → ③ POI clean → ④ review highlighting → ⑤ card fusion → ⑥ scoring → ⑦ style classification → ⑧ day splitting → ⑨ half-day timeline |

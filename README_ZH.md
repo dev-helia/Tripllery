@@ -1,10 +1,10 @@
-# Tripllery v3 —— AI Agent 旅行策划黑客松提交文档（中文版）
+# CardTrip —— AI Agent 旅行策划黑客松提交文档（中文版）
 
 ---
 
 ## 项目概述
 
-Tripllery v3 是一套 **「AI Agent × 前后端全栈一体化」** 的智能旅行策划平台：
+CardTrip v3 是一套 **「AI Agent × 前后端全栈一体化」** 的智能旅行策划平台：
 
 1. **表单收集 → AI Agent → 推荐 POI → 排期 → 四象限预览** 的端到端体验仅需 3 步：填写 -> 选择 -> 预览。
     
@@ -17,7 +17,7 @@ Tripllery v3 是一套 **「AI Agent × 前后端全栈一体化」** 的智能�
 
 ## AI Agent 目标 & 黑客松对接要点
 
-|黑客松评审指标|Tripllery v3 满足方式|
+|黑客松评审指标|CardTrip v3 满足方式|
 |:--|:--|
 |**工具使用**|Places API、Directions API、XHS 爬虫、LLM ChatCompletion 多轮调用|
 |**自主决策链**|Chain：① 关键词抽取→② 多城市查询→③ POI 清洗→④ 评论高亮→⑤ 卡片融合→⑥ 评分→⑦ 旅行风格分类→⑧ 天数分配→⑨ 半天时间轴生成|
