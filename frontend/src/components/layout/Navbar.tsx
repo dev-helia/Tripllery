@@ -28,7 +28,7 @@ const Navbar: React.FC = () => {
       "
     >
       {/* 🔠 Brand Name */}
-      <h1 className="text-2xl font-bold tracking-wider">Tripllery</h1>
+      <h1 className="text-2xl font-bold tracking-wider">CardTrip</h1>
 
       {/* 🔒 Login Button (future: link to auth) */}
       <button
