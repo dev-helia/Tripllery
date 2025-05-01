@@ -1,7 +1,15 @@
 {
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.4"
+    "tailwindcss": "^4.1.4",
+    "vite": "^6.3.3",
+    "vite-plugin-node-polyfills": "^0.23.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm run frontend-dev\" \"bash run_backend.sh\"",
+    "frontend-dev": "cd frontend && npm run dev"
   }
 }

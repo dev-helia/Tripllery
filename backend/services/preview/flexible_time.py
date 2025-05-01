@@ -1,28 +1,50 @@
-# /services/preview/flexible_time.py
+"""
+flexible_time.py · Free Time Block Inserter
+
+This module scans the existing day schedule and smartly inserts
+"Flexible" time blocks (e.g. rest, explore, shopping) into valid time gaps
+between activities, without violating meal or POI structure.
+
+Main Use Case:
+--------------
+Called at the end of each `build_day_schedule()` step to enrich the timeline
+with human-friendly breathing space.
+
+Key Features:
+-------------
+✅ Identifies 20min+ gaps between activities  
+✅ Evenly distributes flexible time  
+✅ Targets a total user-defined duration (e.g. 60min/day)  
+✅ Skips tight schedules gracefully  
+✅ Maintains existing time order
+
+Author: Tripllery AI Backend
+"""
 
 from datetime import datetime, timedelta
+
 
 def smart_insert_flexible_blocks(day_schedule: list, target_total_flexible_minutes: int = 60) -> list:
     """
     Analyze a day's schedule and smartly insert flexible time blocks.
-    
+
     Args:
-        day_schedule (list): List of existing blocks for the day.
-        target_total_flexible_minutes (int): Total flexible minutes we want to insert.
+        day_schedule (list): List of existing blocks (with start_time/end_time)
+        target_total_flexible_minutes (int): Total desired "Free Time" minutes
 
     Returns:
-        list: Updated day_schedule with inserted flexible blocks.
+        list: Updated schedule including inserted "Flexible" blocks
     """
-    # 先找到所有可能插入自由时间的"空隙"（比如POI与POI之间，或者活动块后）
     candidate_gaps = []
 
+    # Step 1️⃣: Scan for gaps ≥ 20min between activities
     for i in range(len(day_schedule) - 1):
         end_time_curr = parse_time(day_schedule[i]["end_time"])
-        start_time_next = parse_time(day_schedule[i+1]["start_time"])
+        start_time_next = parse_time(day_schedule[i + 1]["start_time"])
 
         gap_minutes = (start_time_next - end_time_curr).total_seconds() / 60
 
-        if gap_minutes >= 20:  # 至少20分钟以上的空隙才值得插
+        if gap_minutes >= 20:
             candidate_gaps.append({
                 "index": i,
                 "gap_minutes": gap_minutes,
@@ -30,28 +52,26 @@ def smart_insert_flexible_blocks(day_schedule: list, target_total_flexible_minut
                 "end_time": start_time_next
             })
 
-    # 如果一天非常紧凑，没空隙，直接返回
+    # Step 2️⃣: If no valid gaps, skip inserting
     if not candidate_gaps:
         return day_schedule
 
-    # 分配Flexible时间：均匀往空隙里塞
+    # Step 3️⃣: Evenly insert Flexible blocks into gaps
     remaining_flexible_minutes = target_total_flexible_minutes
     updated_schedule = []
-    offset = 0  # 用来动态调整插入位置
 
     for idx, block in enumerate(day_schedule):
         updated_schedule.append(block)
 
-        # 检查当前块后是否有空隙可插
+        # Match this block to any gap after it
         matching_gap = next((gap for gap in candidate_gaps if gap["index"] == idx), None)
 
         if matching_gap and remaining_flexible_minutes > 0:
-            # 本空隙可以插入的自由时间：不能超过gap本身的一半
+            # Limit insert time: half the gap or remaining
             insert_minutes = min(remaining_flexible_minutes, matching_gap["gap_minutes"] * 0.5)
-            insert_minutes = max(20, insert_minutes)  # 至少20分钟一块
+            insert_minutes = max(20, insert_minutes)  # Minimum chunk
 
             if insert_minutes < remaining_flexible_minutes:
-                # 插入Flexible Block
                 flexible_start = matching_gap["start_time"]
                 flexible_end = flexible_start + timedelta(minutes=insert_minutes)
 
@@ -66,7 +86,6 @@ def smart_insert_flexible_blocks(day_schedule: list, target_total_flexible_minut
                 }
 
                 updated_schedule.append(flex_block)
-
                 remaining_flexible_minutes -= insert_minutes
 
     return updated_schedule
@@ -74,12 +93,12 @@ def smart_insert_flexible_blocks(day_schedule: list, target_total_flexible_minut
 
 def parse_time(time_str: str) -> datetime:
     """
-    Parse a time string like '09:00' into a datetime object (date part dummy).
+    Parse a "HH:MM" string into datetime (dummy date).
 
     Args:
-        time_str (str): Time string in format "HH:MM".
+        time_str (str): Time in "09:00" format
 
     Returns:
-        datetime: Dummy datetime object.
+        datetime: Dummy datetime object
     """
     return datetime.strptime(time_str, "%H:%M")

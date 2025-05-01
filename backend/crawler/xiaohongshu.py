@@ -1,26 +1,53 @@
 """
-Xiaohongshu Crawler · Mock Version
+xiaohongshu.py · Mock Crawler (XHS Simulator)
 
-Simulates travel content search for a query, returns sample text posts.
-Used for highlight generation before real crawler is implemented.
+This module simulates fetching travel-related content from Xiaohongshu (RED) based on
+a Point of Interest (POI)'s name and city. It is a mock version used for early-stage
+highlight generation and testing, before implementing a real scraper or API integration.
+
+Returned content mimics real user posts from XHS, providing short review texts
+and optional note links.
+
+Main Use Case:
+--------------
+Used by the fusion engine to generate highlight summaries and tags for POIs
+when building Tinder-style recommendation cards.
+
+Key Features:
+-------------
+✅ Keyword-based mock review generator  
+✅ Conditional branching for test POIs (e.g. "Pizza", "MoMA")  
+✅ Chinese-language simulated reviews to match realistic input  
+✅ Lightweight and fast for local development and LLM testing
+
+Output Schema:
+--------------
+Dict with:
+    - "raw_texts": List[str] → simulated user comments
+    - "links": List[str] → optional post links
+
+Author: Tripllery AI Backend
 """
 
 from typing import List, Dict
 
 def fetch_reviews_for_poi(name: str, city: str) -> Dict:
     """
-    Simulate fetching Xiaohongshu content for a POI.
+    Simulates fetching Xiaohongshu (RED) review content for a given POI.
+
+    This mock function returns Chinese-language post snippets depending on the POI name,
+    which are used by the highlight extractor to generate descriptions and tags.
 
     Args:
-        name (str): POI name, e.g. "Joe's Pizza"
-        city (str): City name, e.g. "New York"
+        name (str): Name of the Point of Interest (e.g. "Joe's Pizza")
+        city (str): Name of the city where the POI is located (e.g. "New York")
 
     Returns:
-        Dict: {
-            "raw_texts": [ ... ],
-            "links": [...]
-        }
+        Dict: A dictionary with:
+            - "raw_texts": A list of simulated post texts (List[str])
+            - "links": A list of optional reference URLs (List[str])
     """
+
     if "Pizza" in name:
         return {
             "raw_texts": [
@@ -29,6 +56,7 @@ def fetch_reviews_for_poi(name: str, city: str) -> Dict:
             ],
             "links": ["https://www.xiaohongshu.com/note/xyz"]
         }
+
     elif "MoMA" in name:
         return {
             "raw_texts": [
@@ -37,6 +65,7 @@ def fetch_reviews_for_poi(name: str, city: str) -> Dict:
             ],
             "links": ["https://www.xiaohongshu.com/note/abc"]
         }
+
     else:
         return {
             "raw_texts": [

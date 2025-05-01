@@ -1,3 +1,27 @@
+"""
+splitter.py · POI Day Split Engine (LLM + Heuristic)
+
+This module handles splitting a flat list of POIs into multiple travel days.
+
+It first attempts intelligent distribution using OpenAI LLMs,
+and if that fails (due to API error, invalid format, etc.), it falls back to
+a simple round-robin heuristic based on POI rating.
+
+Main Use Case:
+--------------
+Called during Tripllery's `/plan` step via `formatter_llm.py`
+to distribute accepted POIs over N days.
+
+Key Features:
+-------------
+✅ Intelligent clustering via GPT (balanced, themed, diverse)  
+✅ Fast fallback with round-robin + rating sort  
+✅ Consistent JSON output: { "Day 1": ["POI A", "POI B"], ... }  
+✅ Supports graceful fallback with no disruption
+
+Author: Tripllery AI Backend
+"""
+
 import os
 import json
 import httpx
@@ -5,6 +29,7 @@ from typing import List, Dict
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
 
 HEADERS = {
     "Authorization": f"Bearer {OPENAI_API_KEY}",
@@ -12,6 +37,25 @@ HEADERS = {
 }
 
 async def intelligent_split_days(pois: List[Dict], days: int) -> Dict[str, List[str]]:
+    """
+    Uses OpenAI to split POIs into N days intelligently.
+
+    Args:
+        pois (List[Dict]): List of POI objects (must contain "name")
+        days (int): Number of travel days
+
+    Returns:
+        Dict[str, List[str]]: Mapping of day labels to POI names.
+
+    Fallback:
+        If LLM fails or returns invalid format, uses `simple_split_days`.
+
+    Example Output:
+        {
+            "Day 1": ["MoMA", "Joe's Pizza"],
+            "Day 2": ["Central Park", "Empire State Building"]
+        }
+    """
     poi_names = [poi["name"] for poi in pois]
 
     prompt = f"""
@@ -33,7 +77,7 @@ Output format (strictly JSON):
 """
 
     payload = {
-        "model": "gpt-4",
+        "model": MODEL_NAME,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.5
     }
@@ -54,9 +98,25 @@ Output format (strictly JSON):
         print(f"⚠️ intelligent_split_days fallback because: {e}")
         return simple_split_days(pois, days)
 
+
 def simple_split_days(pois: List[Dict], days: int) -> Dict[str, List[str]]:
+    """
+    Fallback day splitter that assigns POIs round-robin by rating.
+
+    Args:
+        pois (List[Dict]): List of POIs
+        days (int): Number of travel days
+
+    Returns:
+        Dict[str, List[str]]: Day → POI name list
+    """
+    # Sort by rating descending
     pois_sorted = sorted(pois, key=lambda x: x.get("rating", 0), reverse=True)
+
     result = {f"Day {i+1}": [] for i in range(days)}
+
+    # Round-robin distribute
     for idx, poi in enumerate(pois_sorted):
         result[f"Day {idx % days + 1}"].append(poi["name"])
+
     return result
